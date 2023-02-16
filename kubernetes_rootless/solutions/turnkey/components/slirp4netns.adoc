@@ -9,7 +9,7 @@ Starting with Linux 3.8, unprivileged users can create network_namespaces(7) alo
 
 slirp4netns allows connecting a network namespace to the Internet in a completely unprivileged way, by connecting a TAP device in a network namespace to the usermode TCP/IP stack ("slirp").
 
-=== What it is ?
+=== What's it ?
 User-mode networking for unprivileged network namespaces
 
 === Usage:
