@@ -1,4 +1,6 @@
 == Rootless Kubernetes
+Source: +
+https://kubernetes.io/docs/tasks/administer-cluster/kubelet-in-userns/#see-also
 
 === Requirements
 
@@ -33,5 +35,5 @@ https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
         Rootless running (https://rancher.com/docs/k3s/latest/en/advanced/#running-k3s-with-rootless-mode-experimental) +
 - Manual deploy node: +
     solutions/manual/solution.adoc
-- Manual deploy with scripts:
+- Manual deploy with scripts: +
     solutions/turnkey/solution.adoc
