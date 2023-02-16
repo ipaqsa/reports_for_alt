@@ -1,0 +1,17 @@
+== RootlessKit
+=== Source:
+https://github.com/rootless-containers/rootlesskit
+
+=== What it is ?
+Linux-native "fake root" for implementing rootless containers.
+
+=== Purpose:
+The purpose of RootlessKit is to run Docker and Kubernetes as an unprivileged user (known as "Rootless mode"), so as to protect the real root on the host from potential container-breakout attacks.
+
+=== Language:
+Golang, Shell
+
+=== What it does ?
+RootlessKit creates user_namespaces(7) and mount_namespaces(7), and executes newuidmap(1)/newgidmap(1) along with subuid(5) and subgid(5).
+
+RootlessKit also supports isolating network_namespaces(7) with userspace NAT using "slirp". Kernel-mode NAT using SUID-enabled lxc-user-nic(1) is also experimentally supported.

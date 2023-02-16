@@ -1,0 +1,109 @@
+== Solution from Github
+Source: https://github.com/rootless-containers/usernetes +
+
+=== Requirements:
+- Kernel >= 4.18.
+- cgroup v2. The host needs to be running with cgroup v2. +
+To allow delegation of all controllers, you need to change the systemd configuration as follows:
+```
+# mkdir -p /etc/systemd/system/user@.service.d
+# cat > /etc/systemd/system/user@.service.d/delegate.conf << EOF
+[Service]
+Delegate=yes
+EOF
+# systemctl daemon-reload
+```
+- CoreDNS
+- CRI runtimes +
+    * containerd (default) +
+    * CRI-O
+- OCI runtime +
+    * crun
+- systemd >= 242.
+- mount.fuse3 binary. Provided by fuse3 package on most distros.
+- iptables binary. Provided by iptables package on most distros.
+- conntrack binary. Provided by conntrack package on most distros.
+- newuidmap and newgidmap binaries. Provided by uidmap package on most distros.
+- /etc/subuid and /etc/subgid should contain more than 65536 sub-IDs. e.g. exampleuser:231072:65536.
+These files are automatically configured on most distros.
+- the following kernel modules to be loaded:
+```
+fuse
+tun
+tap
+bridge
+br_netfilter
+veth
+ip_tables
+ip6_tables
+iptable_nat
+ip6table_nat
+iptable_filter
+ip6table_filter
+nf_tables
+x_tables
+xt_MASQUERADE
+xt_addrtype
+xt_comment
+xt_conntrack
+xt_mark
+xt_multiport
+xt_nat
+xt_tcpudp
+```
+- RootlessKit (./components/rootlesskit.adoc)
+- slirp4netns (./components/slirp4nets.adoc)
+To set up NAT across the host and the network namespace without the root privilege
+- fuse-overlayfs (./components/fuse-overlayfs.adoc)
+
+=== Restrictions:
+- Usermode networking called slirp4netns is used instead of kernel-mode vEth pairs.
+- fuse-overlayfs is used instead of kernel-mode overlayfs.
+- Node ports are network-namespaced
+- Apparmor is unsupported
+
+=== Structure
+
+[source]
+----
+|-- boot
+    |-- containerd-fuse-overlayfs-grpc.sh
+    |-- containerd.sh
+    |-- crio.sh
+    |-- docker-2ndboot.sh
+    |-- docker-unsudo.sh
+    |-- etcd-init-data.sh
+    |-- etcd.sh
+    |-- flanneld.sh
+    |-- kube-apiserver.sh
+    |-- kube-controller-manager.sh
+    |-- kube-proxy.sh
+    |-- kube-scheduler.sh
+    |-- kubelet-containerd.sh
+    |-- kubelet-crio.sh
+    |-- kubelet.sh
+    |-- nsenter.sh
+    |-- rootlesskit.sh
+|-- common
+    |-- cfssl.sh (for wait-init-certs)
+    |-- common.inc.sh
+|-- config
+    |-- cfssl
+    |-- cni_net.d
+    |-- flannel
+    |-- modules-load.d
+|-- docs (binary licenses)
+|-- hack
+|-- manifests
+    |-- coredns.yml (for coreDNS, install by kubctl apply in install.sh)
+|-- install.sh (for install)
+|-- rootlessctl.sh (for build bin from Docker)
+|-- uinstall.sh (for unistall)
+|-- show-status.sh
+|-- show-cleanup-command.sh
+----
+== How it works:
+    Dockerfile: ./dockerfile.adoc (build binaries)
+    install.sh: ./install.adoc (install)
+
+

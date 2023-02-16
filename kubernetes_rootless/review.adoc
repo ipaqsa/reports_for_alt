@@ -1,0 +1,37 @@
+== Rootless Kubernetes
+
+=== Requirements
+
+- Kubernetes version > 1.22 +
+- Enabled cgroup v2 (for second step) +
+https://rootlesscontaine.rs/getting-started/common/cgroup2/
+- Enabled systemd with user session +
+https://rootlesscontaine.rs/getting-started/common/login/
+- Configure several sysctl values, depending on host Linux distribution +
+https://rootlesscontaine.rs/getting-started/common/sysctl/
+- Unprivileged user is listed in /etc/subuid and /etc/subgid +
+https://rootlesscontaine.rs/getting-started/common/subuid/
+- Enabled the KubeletInUserNamespace feature gate +
+https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
+
+=== Possible solution
+Run not a node, but a pod: +
+https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+=== Types of solutions
+
+- Running Kubernetes inside Rootless Docker/Podman: +
+    Use kind: +
+        What`s kind (https://kind.sigs.k8s.io/docs/user/rootless/) +
+        Rootless running (https://kind.sigs.k8s.io/docs/user/rootless/) +
+- Running Kubernetes inside Unprivileged Containers: +
+    Use sysbox: +
+        What`s sysbox (https://github.com/nestybox/sysbox) +
+- Running Rootless Kubernetes directly on a host: +
+    Use K3s: +
+        What`s k3s (https://k3s.io/) +
+        Rootless running (https://rancher.com/docs/k3s/latest/en/advanced/#running-k3s-with-rootless-mode-experimental) +
+- Manual deploy node: +
+    solutions/manual/solution.adoc
+- Manual deploy with scripts:
+    solutions/turnkey/solution.adoc

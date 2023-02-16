@@ -1,0 +1,87 @@
+= Solution
+
+== Contents:
+- Creating a user namespace +
+- Creating a delegated cgroup tree +
+- Configuring network +
+- Configuring CRI +
+- Configuring kubelet +
+- Configuring kube-proxy +
+
+== Creating a user namespace
+=== Base:
+==== Why:
+For run Kubernetes in a user-namespace container such as Rootless Docker/Podman or LXC/LXD
+
+==== How:
+A user namespace can be also unshared by using command line tools such as:
+
+- unshare(1)
+- RootlessKit
+- become-root
+
+After:
+After unsharing the user namespace, you will also have to unshare other namespaces such as mount namespace.
+
+You do not need to call chroot() nor pivot_root() after unsharing the mount namespace, however, you have to mount writable filesystems on several directories in the namespace.
+
+
+=== Test
+- Run Kubernetes in a user-namespace container such as Rootless Docker/Podman or LXC/LXD +
+- Following directories need to be writable in the namespace (not outside the namespace):
+
+[source]
+----
+/etc
+/run
+/var/logs
+/var/lib/kubelet
+/var/lib/cni
+/var/lib/containerd (for containerd)
+/var/lib/containers (for CRI-O)
+----
+
+=== Realization:
+- Path to file: steps/user_namespace.adoc +
+
+==== Summary:
+
+=== Issues:
+
+== Creating a delegated cgroup tree
+=== Requirements:
+- cgroup-v2
+- systemd configured to allow delegation: +
+https://rootlesscontaine.rs/getting-started/common/cgroup2/
+
+=== Base:
+==== Why:
+For run Kubernetes in Rootless Docker/Podman or LXC/LXD on a systemd-based host
+
+==== How:
+
+=== Test:
+- Run Kubernetes in Rootless Docker/Podman or LXC/LXD on a systemd-based host
+
+=== Realization:
+- Path to file: steps/systemd.adoc +
+
+==== Summary:
+
+=== Issues:
+
+== Configuring network
+=== Requirements:
+
+=== Base:
+==== Why:
+
+==== How:
+
+=== Test:
+
+=== Realization:
+
+==== Summary:
+
+=== Issues:

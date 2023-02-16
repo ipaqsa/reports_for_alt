@@ -1,0 +1,53 @@
+== slirp4netns
+
+=== Source:
+https://github.com/rootless-containers/slirp4netns
+
+=== Motivation
+Motivation
+Starting with Linux 3.8, unprivileged users can create network_namespaces(7) along with user_namespaces(7). However, unprivileged network namespaces had not been very useful, because creating veth(4) pairs across the host and network namespaces still requires the root privileges. (i.e. No internet connection)
+
+slirp4netns allows connecting a network namespace to the Internet in a completely unprivileged way, by connecting a TAP device in a network namespace to the usermode TCP/IP stack ("slirp").
+
+=== What it is ?
+User-mode networking for unprivileged network namespaces
+
+=== Usage:
+Terminal 1: Create user/network/mount namespaces
+```
+(host)$ unshare --user --map-root-user --net --mount
+(namespace)$ echo $$ > /tmp/pid
+```
+Terminal 2: Start slirp4netns
+```
+(host)$ slirp4netns --configure --mtu=65520 --disable-host-loopback $(cat /tmp/pid) tap0
+starting slirp, MTU=65520
+```
+
+Terminal 1: Make sure the tap0 is configured and connected to the Internet
+```
+(namespace)$ ip a
+1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+3: tap0: <BROADCAST,UP,LOWER_UP> mtu 65520 qdisc fq_codel state UNKNOWN group default qlen 1000
+    link/ether c2:28:0c:0e:29:06 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.100/24 brd 10.0.2.255 scope global tap0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::c028:cff:fe0e:2906/64 scope link
+       valid_lft forever preferred_lft forever
+(namespace)$ echo "nameserver 10.0.2.3" > /tmp/resolv.conf
+(namespace)$ mount --bind /tmp/resolv.conf /etc/resolv.conf
+(namespace)$ curl https://example.com
+```
+
+=== Default configuration:
+
+- MTU: 1500
+- CIDR: 10.0.2.0/24
+- Gateway/Host: 10.0.2.2 (network address + 2)
+- DNS: 10.0.2.3 (network address + 3)
+- DHCP begin: 10.0.2.15 (network address + 15)
+- DHCP end: 10.0.2.30 (network address + 30)
+- IPv6 CIDR: fd00::/64
+- IPv6 Gateway/Host: fd00::2
+- IPv6 DNS: fd00::3

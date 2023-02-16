@@ -1,0 +1,167 @@
+== Отчет
+
+=== Обзор
+Мы обнаружили и начали анализ проекта usernetes(https://github.com/rootless-containers/usernetes). +
+
+По первым наблюдениям проект построен по инструкции с сайта Kubernetes, и должен реализовать запуск мастера и ноды в рутлесс режиме. +
+
+На выбор дается две cri: +
+- cri-o +
+- containerd
+
+=== Требования
+Проект предъявляет следующие требования:
+
+- Ядро старше 4.18
+- cgroup второй версии и полный доступ делегирования для systemd.
+- systemd старше 242
+- Пакет fuse3
+- Пакет iptables
+- Пакет conntrack
+- Пакеты newuidmap и newgidmap
+- /etc/subuid and /etc/subgid должны включать больше чем 65536 sub-IDs
+- Список нужных модулей ядра:
+```
+fuse
+tun
+tap
+bridge
+br_netfilter
+veth
+ip_tables
+ip6_tables
+iptable_nat
+ip6table_nat
+iptable_filter
+ip6table_filter
+nf_tables
+x_tables
+xt_MASQUERADE
+xt_addrtype
+xt_comment
+xt_conntrack
+xt_mark
+xt_multiport
+xt_nat
+xt_tcpudp
+```
+- Docker для установки
+- Пакет rootlessKit
+- Пакет slirp4netns
+- Пакет fuse-overlayfs
+
+=== Установка
+Установка проходит в два этапа:
+
+- С помощью докера собираются все используемые компоненты
+- С помощью install.sh производится установка
+
+=== Запуск
+Запуск происходит автоматически или с помощью
+```
+systemctl --user -T start u7s.target
+```
+
+Затем экспортируем KUBECONFIG
+```
+export KUBECONFIG="$HOME/.config/usernetes/master/admin-localhost.kubeconfig"
+```
+
+И проверяем работу
+```
+kubectl get nodes -o wide
+```
+
+==== Обзор работы Dockerfile
+- Устанавливает нужные для сборки переменные
+- Собирает базовые образы (alpine, golangalpine, common-golang-alpine)
+- Собирает rootlessKit +
+From https://github.com/rootless-containers/rootlesskit.git
+- Собирает slip4nets +
+From https://github.com/rootless-containers/slirp4netns
+- Собирает fuse-overlayfs +
+From https://github.com/containers/fuse-overlayfs
+- Собирает containerd-fuse-overlayfs +
+From https://github.com/containerd/fuse-overlayfs-snapshotter/
+- Собирает crun-build +
+From https://github.com/containers/crun
+- Собирает containerd +
+From https://github.com/containerd/containerd.git
+- Собирает cri-o +
+From https://github.com/cri-o/cri-o.git
+- Собирает conmon +
+From https://github.com/containers/conmon.git
+- Собирает CNI Plugins +
+From https://github.com/containernetworking/plugins +
+From https://github.com/flannel-io/cni-plugin
+- Собирает master +
+From https://dl.k8s.io
+- Собирает node +
+From https://github.com/kubernetes/kubernetes.git
+- Собирает etcd +
+From https://github.com/etcd-io/etcd
+- Собирает cfssl +
+From https://github.com/cloudflare/cfssl
+- Копирует бинарники в каталог ./bin
+
+P.S. Собирает не всегда означает сборку, иногда идет простое скачивание релиза
+
+==== Обзор работы install.sh
+- Ищет каталог с бинарными файлами
+- Создает .config в домашней каталоге
+- Парсит аргументы
+* arg0=$0 (first arg)
+* start="u7s.target" (target for start)
+* cri="containerd"
+* cni=""
+* publish="" (publish ports in RootlessKit's network namespace)
+* publish_default="0.0.0.0:6443:6443/tcp"
+* cidr="10.0.42.0/24"
+* delay="" (delay for debug)
+* wait_init_certs=""
+- Set default --publish if none was specified
+- Проверяет настройку cgroup
+- Проверяет наличие нужных модулей ядра
+- Создает файл переменных окружения (~/.config/usernetes/env) используется при создании сервисов
+- Начинает установку(создает systemd юниты, указывая поле Delegate=yes, а пути к ./bin):
+* u7s (главный таргет)
+* RootlessKit
+* etcd
+* master
+* node
+- Завершает установку и запускает таргет (systemctl --user -T start u7s.target)
+
+=== Компоненты используемые в проекте:
+- Компоненты мастера(etcd, kube-apiserver, ...)
+- Компоненты ноды (kubelet, kube-proxy)
+- CRI Runtimes
+- OCI runtime(только crun)
+- CNI Плагины(только Flannel)
+- coreDNS
+=== Компоненты нужные для работы
+- fuse-overlayfs +
+Имплементация overlay+shiftfs в FUSE
+- rootlesskit +
+Руководит пространствами имен
+- slirp4nets
+Создает сеть в рутлес режиме
+
+
+=== Ограничения от автора
+Грубый машинный перевод +
+
+- Сеть в пользовательском режиме, называемая slirp4netns, используется вместо пар vEth в режиме ядра.
+- fuse-overlayfs используется вместо overlayfs в режиме ядра.
+- Порты узла имеют сетевое пространство имен
+- Apparmor не поддерживается
+
+Оригинал +
+- Usermode networking called slirp4netns is used instead of kernel-mode vEth pairs. +
+- fuse-overlayfs is used instead of kernel-mode overlayfs. +
+- Node ports are network-namespaced +
+- Apparmor is unsupported
+
+=== Текущие цели
+- Разобрать и описать принцип работы трех компонентов
+- Осмыслить весь происходящий процесс
+- Попытаться произвести тестовую сборку проекта без внесения изменений

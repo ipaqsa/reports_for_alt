@@ -1,0 +1,34 @@
+== Install step by step
+
+=== steps diagram +
+```
+./work.svg
+```
+
+=== Steps
+- Detect base dir
+    * Find ./bin dir(build from Dockerfile)
+- Detect config dir
+$HOME/.config for kubernetes
+- Parse args
+    * arg0=$0 (first arg)
+    * start="u7s.target" (target for start)
+    * cri="containerd"
+    * cni=""
+    * publish="" (publish ports in RootlessKit's network namespace)
+    * publish_default="0.0.0.0:6443:6443/tcp"
+    * cidr="10.0.42.0/24"
+    * delay="" (delay for debug)
+    * wait_init_certs=""
+- Set default --publish if none was specified
+- Check cgroup config
+    * Systemd configured to allow delegation
+- Check kernel modules
+- Create EnvironmentFile (~/.config/usernetes/env)
+- Begin installation (create systemd unit):
+    * u7s (create base target)
+    * RootlessKit
+    * etcd
+    * master
+    * node
+- Finish installation

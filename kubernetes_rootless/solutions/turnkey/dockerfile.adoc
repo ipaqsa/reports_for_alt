@@ -1,0 +1,33 @@
+== Dockerfile
+
+=== Steps
+- Set args
+- Build base image(alpine, golangalpine, common-golang-alpine)
+- Build rootlessKit +
+From https://github.com/rootless-containers/rootlesskit.git
+- Build slip4nets +
+From https://github.com/rootless-containers/slirp4netns
+- Build fuse-overlayfs +
+From https://github.com/containers/fuse-overlayfs
+- Build containerd-fuse-overlayfs +
+From https://github.com/containerd/fuse-overlayfs-snapshotter/
+- Build crun-build +
+From https://github.com/containers/crun
+- Build containerd +
+From https://github.com/containerd/containerd.git
+- Build cri-o +
+From https://github.com/cri-o/cri-o.git
+- Build conmon +
+From https://github.com/containers/conmon.git
+- Build CNI Plugins +
+From https://github.com/containernetworking/plugins +
+From https://github.com/flannel-io/cni-plugin
+- Build master +
+From https://dl.k8s.io
+- Build node +
+From https://github.com/kubernetes/kubernetes.git
+- Build etcd +
+From https://github.com/etcd-io/etcd
+- Build cfssl +
+From https://github.com/cloudflare/cfssl
+- Copy binaries to bin
