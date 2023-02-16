@@ -2,7 +2,7 @@
 === Source:
 https://github.com/rootless-containers/rootlesskit
 
-=== What it is ?
+=== What's it ?
 Linux-native "fake root" for implementing rootless containers.
 
 === Purpose:
